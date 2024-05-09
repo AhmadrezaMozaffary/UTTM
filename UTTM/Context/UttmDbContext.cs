@@ -29,6 +29,7 @@ namespace UTTM.Context
         public DbSet<Society> Society { get; set; }
         public DbSet<Event> Event { get; set; }
         public DbSet<Professor> Professor { get; set; }
-        public DbSet<Student> Students { get; set; }
+        public DbSet<Student> Student { get; set; }
+        public DbSet<Course> Course { get; set; }
     }
 }

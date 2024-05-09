@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UTTM.Context;
 
@@ -11,9 +12,10 @@ using UTTM.Context;
 namespace UTTM.Migrations
 {
     [DbContext(typeof(UttmDbContext))]
-    partial class UttmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240509220752_RenameTables")]
+    partial class RenameTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

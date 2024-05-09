@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UTTM.Context;
 
@@ -11,9 +12,10 @@ using UTTM.Context;
 namespace UTTM.Migrations
 {
     [DbContext(typeof(UttmDbContext))]
-    partial class UttmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240509220622_InitCourseDbSet")]
+    partial class InitCourseDbSet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,7 +61,7 @@ namespace UTTM.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("Course");
+                    b.ToTable("Courses");
                 });
 
             modelBuilder.Entity("UTTM.Models.Event", b =>
@@ -269,7 +271,7 @@ namespace UTTM.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Student");
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("UTTM.Models.University", b =>
