@@ -31,5 +31,7 @@ namespace UTTM.Context
         public DbSet<Professor> Professor { get; set; }
         public DbSet<Student> Student { get; set; }
         public DbSet<Course> Course { get; set; }
+        public DbSet<Reminder> Reminder { get; set; }
+
     }
 }
