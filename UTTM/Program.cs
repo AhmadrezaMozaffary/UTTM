@@ -1,11 +1,31 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using UTTM.Context;
 
 var builder = WebApplication.CreateBuilder(args);
+#region Builder
 var Configuration = builder.Configuration;
 
 // Add services to the container.
+var jwtIssuer = Configuration.GetSection("Jwt:Issuer").Get<string>();
+var jwtKey = Configuration.GetSection("Jwt:Key").Get<string>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+ .AddJwtBearer(options =>
+ {
+     options.TokenValidationParameters = new TokenValidationParameters
+     {
+         ValidateIssuer = true,
+         ValidateAudience = true,
+         ValidateLifetime = true,
+         ValidateIssuerSigningKey = true,
+         ValidIssuer = jwtIssuer,
+         ValidAudience = jwtIssuer,
+         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+     };
+ });
 
 builder.Services.AddControllers();
 // Add services to the container.
@@ -35,10 +55,10 @@ builder.Services.AddCors(options =>
                       });
 });
 
-
+#endregion
 
 var app = builder.Build();
-
+#region App
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{
@@ -51,7 +71,8 @@ app.UseSwaggerUI(c =>
 
 app.UseHttpsRedirection();
 
-//app.UseAuthorization();
+app.UseAuthorization();
+app.UseAuthorization();
 
 app.UseRouting();
 
@@ -62,3 +83,4 @@ app.MapControllerRoute(
     pattern: "{controller=TestModels}/{action=Index}/{id?}");
 
 app.Run();
+#endregion

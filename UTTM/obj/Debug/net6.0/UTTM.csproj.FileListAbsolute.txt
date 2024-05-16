@@ -279,5 +279,5 @@ D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\refint\UTTM.dll
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\UTTM.pdb
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\UTTM.genruntimeconfig.cache
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\ref\UTTM.dll
-D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\UTTM.sourcelink.json
-D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\UTTM.csproj.Up2Date
+D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\UTTM.csproj.CopyComplete
