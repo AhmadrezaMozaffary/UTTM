@@ -27,7 +27,7 @@ namespace UTTM.Controllers.Api
         [HttpPost("Add")]
         public async Task<IActionResult> Add([FromBody] UniversityViewModel req)
         {
-            if (!ModelState.IsValid) { return BadRequest(); };
+            if (!ModelState.IsValid) { return BadRequest(ModelState); };
 
             if(UniversityExists(req.Name)) { return Unauthorized("دانشگاه قبلا اضافه شده است"); };
 

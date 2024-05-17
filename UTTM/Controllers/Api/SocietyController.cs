@@ -34,7 +34,7 @@ namespace UTTM.Controllers.Api
         [HttpPost("Add")]
         public async Task<IActionResult> Add([FromBody] SocietyViewModel req)
         {
-            if (!ModelState.IsValid) { return BadRequest(); };
+            if (!ModelState.IsValid) { return BadRequest(ModelState); };
 
             if (!MajorExists(req.MajorId) || !UserExists(req.UserId)) { return BadRequest("کاربر یا رشته انتخاب شده وجود ندارد"); }
 
