@@ -67,7 +67,7 @@ namespace UTTM.Controllers.Api
         {
             University? _uni = await Ctx.University.FirstOrDefaultAsync(u => u.Id == id);
 
-            if (_uni == null) { return NotFound("دانشگاه جهت حذف وجود ندارد"); };
+            if (_uni == null) { return NotFound("دانشگاهی جهت حذف وجود ندارد"); };
 
             Ctx.University.Remove(_uni); 
             
