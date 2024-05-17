@@ -47,7 +47,7 @@ namespace UTTM.Controllers.Api
                 {
                     Id = 0,
                     UserName = req.UserName,
-                    Password = EncryptPassword(req.Password),
+                    Password = HashPassword(req.Password),
                     Role = req.Role,
                     CreatedAt = currentDate,
                     LastUpdatedAt = currentDate
@@ -69,11 +69,11 @@ namespace UTTM.Controllers.Api
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
 
         {
-            if(!UserExists(req.UserName)){ return NotFound("نام کاربری وجود ندارد"); };
+            if (!UserExists(req.UserName)) { return NotFound("نام کاربری وجود ندارد"); };
 
             User dbUser = await _context.User.FirstAsync<User>(_user => _user.UserName == req.UserName);
 
-            if (dbUser != null && (DecryptPassword(dbUser.Password) == req.Password))
+            if (dbUser != null && (dbUser.Password == HashPassword(req.Password)))
             {
                 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
                 var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -105,15 +105,25 @@ namespace UTTM.Controllers.Api
         }
 
 
-        private string EncryptPassword(string password)
+        private string HashPassword(string password)
         {
-            return password;
-        }
+            using (MD5 md5Hash = MD5.Create())
+            {
+                // Convert the input string to a byte array and compute the hash.
+                byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
 
+                // Create a new Stringbuilder to collect the bytes
+                // and create a string.
+                StringBuilder sBuilder = new StringBuilder();
 
-        private string DecryptPassword(string password)
-        {
-            return password;
+                // Loop through each byte of the hashed data 
+                // and format each one as a hexadecimal string.
+                for (int i = 0; i < data.Length; i++)
+                    sBuilder.Append(data[i].ToString("x2"));
+
+                // Return the hexadecimal string.
+                return sBuilder.ToString();
+            }
         }
     }
 }
