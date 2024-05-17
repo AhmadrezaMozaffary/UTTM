@@ -56,7 +56,7 @@ namespace UTTM.Controllers.Api
                 await _context.User.AddAsync(_newUser);
                 Save();
 
-                return Ok("کاربر با موفقیت ایجاد شد");
+                return Ok(_newUser.Id);
             }
             else
             {
