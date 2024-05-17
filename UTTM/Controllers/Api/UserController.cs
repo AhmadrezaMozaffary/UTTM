@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using UTTM.Context;
+using UTTM.Infra;
 using UTTM.Models;
 using UTTM.Models.ViewModels;
 
@@ -21,15 +22,13 @@ namespace UTTM.Controllers.Api
 
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : UttmController
     {
         private IConfiguration _config;
-        private UttmDbContext _context;
 
-        public UserController(IConfiguration config, UttmDbContext context)
-        {
+        public UserController(IConfiguration config, UttmDbContext context): base(context)
+        {     
             _config = config;
-            _context = context;
         }
 
         [HttpPost("signup")]
@@ -53,7 +52,7 @@ namespace UTTM.Controllers.Api
                     LastUpdatedAt = currentDate
                 };
 
-                await _context.User.AddAsync(_newUser);
+                await Ctx.User.AddAsync(_newUser);
                 Save();
 
                 return Ok(_newUser.Id);
@@ -71,7 +70,7 @@ namespace UTTM.Controllers.Api
         {
             if (!UserExists(req.UserName)) { return NotFound("نام کاربری وجود ندارد"); };
 
-            User dbUser = await _context.User.FirstAsync<User>(_user => _user.UserName == req.UserName);
+            User dbUser = await Ctx.User.FirstAsync<User>(_user => _user.UserName == req.UserName);
 
             if (dbUser != null && (dbUser.Password == HashPassword(req.Password)))
             {
@@ -96,12 +95,7 @@ namespace UTTM.Controllers.Api
 
         private bool UserExists(string username)
         {
-            return _context.User.Any(u => u.UserName == username);
-        }
-
-        private void Save()
-        {
-            _context.SaveChanges();
+            return Ctx.User.Any(u => u.UserName == username);
         }
 
 
