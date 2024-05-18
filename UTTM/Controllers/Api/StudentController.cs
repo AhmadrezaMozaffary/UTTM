@@ -68,14 +68,6 @@ namespace UTTM.Controllers.Api
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
-            if (!UserExists(req.UserId)) return NotFound("کاربر یافت نشد");
-
-            if (!SocietyExists(req.SocietyId)) return NotFound("انجمن یافت نشد");
-
-            if (CurrentStudentExists(req.UserId)) return Unauthorized("برای کاربر انتخاب شده قبلا دانشجو اضافه شده است");
-
-            if (!UserCanBeStudent(req.UserId)) return Unauthorized("کابر از نوع دانشجو نیست");
-
             Student? _existingStd = await GetStudent(req.Id);
 
             if (_existingStd == null) return NotFound("دانشجو جهت ویرایش یافت نشد");
@@ -83,8 +75,6 @@ namespace UTTM.Controllers.Api
             _existingStd.FirstName = req.FirstName;
             _existingStd.LastName = req.LastName;
             _existingStd.Avatar = req.Avatar;
-            _existingStd.UserId = req.UserId;
-            _existingStd.SocietyId = req.SocietyId;
 
             Save();
 

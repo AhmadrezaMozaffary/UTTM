@@ -22,10 +22,6 @@
         public string LastName { get; set; } = string.Empty;
 
         public string Avatar { get; set; } = string.Empty;
-
-        public int UserId { get; set; }
-
-        public int SocietyId { get; set; }
     }
 
 }
