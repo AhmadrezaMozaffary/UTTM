@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using UTTM.Business;
 using UTTM.Context;
 using UTTM.Infra;
+using UTTM.Infra.Interfaces;
 using UTTM.Models;
 using UTTM.Models.ViewModels;
 
@@ -10,10 +12,16 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class MajorController : UttmController
+    public class MajorController : UttmController, IControllerBusiness<MajorBusiness>
     {
+        public MajorBusiness Biz { get; set; }
+
+        public UniversityBusiness UniBiz { get; set; }
+
         public MajorController(UttmDbContext context) : base(context)
         {
+            Biz = new MajorBusiness(context);
+            UniBiz = new UniversityBusiness(context);
         }
 
         [HttpGet("GetAll")]
@@ -29,9 +37,9 @@ namespace UTTM.Controllers.Api
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); };
 
-            if (MajorExists(req)) { return Unauthorized("این رشته قبلا در این دانشگاه اضافه شده است"); };
+            if (Biz.MajorExists(req)) { return Unauthorized("این رشته قبلا در این دانشگاه اضافه شده است"); };
 
-            if (!UniversityExists(req.UniversityId)) { return BadRequest("دانشگاه انتخاب شده معتبر نیست یا وجود ندارد"); };
+            if (!UniBiz.UniversityExists(req.UniversityId)) { return BadRequest("دانشگاه انتخاب شده معتبر نیست یا وجود ندارد"); };
 
             Major _newMajor = new()
             {
@@ -76,20 +84,5 @@ namespace UTTM.Controllers.Api
 
             return Ok();
         }
-
-        #region  Helpers
-        private bool MajorExists(MajorViewModel req)
-        {
-            bool exists = Ctx.Major.Where(m => m.UniversityId == req.UniversityId).Any(m => m.Title == req.Title);
-
-            return exists;
-        }
-
-        private bool UniversityExists(int uniId)
-        {
-            return Ctx.University.Any(u => u.Id == uniId);
-        }
-
-        #endregion
     }
 }

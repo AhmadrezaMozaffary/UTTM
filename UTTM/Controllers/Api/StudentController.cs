@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using UTTM.Business;
 using UTTM.Context;
 using UTTM.Infra;
+using UTTM.Infra.Interfaces;
 using UTTM.Models;
 using UTTM.Models.ViewModels;
 
@@ -10,10 +12,20 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StudentController : UttmController
+    public class StudentController : UttmController, IControllerBusiness<StudentBusiness>
     {
+        public StudentBusiness Biz { get; set; }
+
+        public UserBusiness UserBiz { get; set; }
+
+        public SocietyBusiness SocietyBiz { get; set; }
+
+
         public StudentController(UttmDbContext context) : base(context)
         {
+            Biz = new StudentBusiness(context);
+            UserBiz = new UserBusiness(context);
+            SocietyBiz = new SocietyBusiness(context);
         }
 
         [HttpGet("GetAll")]
@@ -26,7 +38,7 @@ namespace UTTM.Controllers.Api
         [HttpGet("GetById")]
         public async Task<IActionResult> GetById(int id)
         {
-            Student? _std = await GetStudent(id);
+            Student? _std = await Biz.GetStudent(id);
 
             if (_std == null) return NotFound("دانشجو مد نظر یافت نشد");
 
@@ -38,13 +50,13 @@ namespace UTTM.Controllers.Api
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            if (!UserExists(req.UserId)) return NotFound("کاربر یافت نشد");
+            if (!UserBiz.UserExists(req.UserId)) return NotFound("کاربر یافت نشد");
 
-            if (!SocietyExists(req.SocietyId)) return NotFound("انجمن یافت نشد");
+            if (!SocietyBiz.SocietyExists(req.SocietyId)) return NotFound("انجمن یافت نشد");
 
-            if(CurrentStudentExists(req.UserId)) return Unauthorized("برای کاربر انتخاب شده قبلا دانشجو اضافه شده است");
+            if (Biz.CurrentStudentExists(req.UserId)) return Unauthorized("برای کاربر انتخاب شده قبلا دانشجو اضافه شده است");
 
-            if (!UserCanBeStudent(req.UserId)) return Unauthorized("کابر از نوع دانشجو نیست");
+            if (!UserBiz.UserCanBeTypeOf(UserRole.Student, req.UserId)) return Unauthorized("کابر از نوع دانشجو نیست");
 
             Student _newStd = new()
             {
@@ -68,7 +80,7 @@ namespace UTTM.Controllers.Api
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
-            Student? _existingStd = await GetStudent(req.Id);
+            Student? _existingStd = await Biz.GetStudent(req.Id);
 
             if (_existingStd == null) return NotFound("دانشجو جهت ویرایش یافت نشد");
 
@@ -84,7 +96,7 @@ namespace UTTM.Controllers.Api
         [HttpDelete("Remove")]
         public async Task<IActionResult> Remove(int id)
         {
-            Student? _std = await GetStudent(id);
+            Student? _std = await Biz.GetStudent(id);
 
             if (_std == null) return NotFound("دانشجو مد نظر یافت نشد");
 
@@ -94,34 +106,5 @@ namespace UTTM.Controllers.Api
             return Ok(_std);
         }
 
-        #region Helpers
-        private bool CurrentStudentExists(int userId)
-        {
-            return Ctx.Student.Where(s => s.UserId == userId).Any();
-        }
-
-        private bool UserCanBeStudent(int userId)
-        {
-            UserRole? role = Ctx.User.First(u => u.Id == userId).Role;
-
-            return  role == UserRole.Student;
-        }
-
-        private Task<Student?> GetStudent(int id)
-        {
-            return Ctx.Student.FirstOrDefaultAsync(s => s.Id == id);
-        }
-
-        private bool UserExists(int userId)
-        {
-            return Ctx.User.Any(u => u.Id == userId);
-        }
-
-        private bool SocietyExists(int societyId)
-        {
-            return Ctx.Society.Any(s => s.Id == societyId);
-        }
-
-        #endregion
     }
 }

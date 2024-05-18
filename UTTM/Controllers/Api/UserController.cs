@@ -5,8 +5,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
+using UTTM.Business;
 using UTTM.Context;
 using UTTM.Infra;
+using UTTM.Infra.Interfaces;
 using UTTM.Models;
 using UTTM.Models.ViewModels;
 
@@ -22,13 +24,16 @@ namespace UTTM.Controllers.Api
 
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : UttmController
+    public class UserController : UttmController, IControllerBusiness<UserBusiness>
     {
         private IConfiguration _config;
+
+        public UserBusiness Biz { get; set; }
 
         public UserController(IConfiguration config, UttmDbContext context): base(context)
         {     
             _config = config;
+            Biz = new UserBusiness(context);
         }
 
         [HttpPost("signup")]
@@ -36,7 +41,7 @@ namespace UTTM.Controllers.Api
         {
             if (ModelState.IsValid)
             {
-                if (UserExists(req.UserName))
+                if (Biz.UserExists(req.UserName))
                 {
                     return Ok("نام کاربری قبلا انتخاب شده است");
                 }
@@ -46,7 +51,7 @@ namespace UTTM.Controllers.Api
                 {
                     Id = 0,
                     UserName = req.UserName,
-                    Password = HashPassword(req.Password),
+                    Password = Biz.HashPassword(req.Password),
                     Role = req.Role,
                     CreatedAt = currentDate,
                     LastUpdatedAt = currentDate
@@ -68,11 +73,11 @@ namespace UTTM.Controllers.Api
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
 
         {
-            if (!UserExists(req.UserName)) { return NotFound("نام کاربری وجود ندارد"); };
+            if (!Biz.UserExists(req.UserName)) { return NotFound("نام کاربری وجود ندارد"); };
 
             User dbUser = await Ctx.User.FirstAsync<User>(_user => _user.UserName == req.UserName);
 
-            if (dbUser != null && (dbUser.Password == HashPassword(req.Password)))
+            if (dbUser != null && (dbUser.Password == Biz.HashPassword(req.Password)))
             {
                 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
                 var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -93,31 +98,5 @@ namespace UTTM.Controllers.Api
             }
         }
 
-        private bool UserExists(string username)
-        {
-            return Ctx.User.Any(u => u.UserName == username);
-        }
-
-
-        private string HashPassword(string password)
-        {
-            using (MD5 md5Hash = MD5.Create())
-            {
-                // Convert the input string to a byte array and compute the hash.
-                byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
-
-                // Create a new Stringbuilder to collect the bytes
-                // and create a string.
-                StringBuilder sBuilder = new StringBuilder();
-
-                // Loop through each byte of the hashed data 
-                // and format each one as a hexadecimal string.
-                for (int i = 0; i < data.Length; i++)
-                    sBuilder.Append(data[i].ToString("x2"));
-
-                // Return the hexadecimal string.
-                return sBuilder.ToString();
-            }
-        }
     }
 }

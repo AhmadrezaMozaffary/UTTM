@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using UTTM.Business;
 using UTTM.Context;
 using UTTM.Infra;
+using UTTM.Infra.Interfaces;
 using UTTM.Models;
 using UTTM.Models.ViewModels;
 
@@ -9,9 +11,20 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class SocietyController : UttmController
+    public class SocietyController : UttmController, IControllerBusiness<SocietyBusiness>
     {
-        public SocietyController(UttmDbContext context) : base(context) { }
+        public SocietyBusiness Biz { get; set; }
+
+        public UserBusiness UserBiz { get; set; }
+
+        public MajorBusiness MajorBiz { get; set; }
+
+        public SocietyController(UttmDbContext context) : base(context)
+        {
+            Biz = new SocietyBusiness(context);
+            UserBiz = new UserBusiness(context);
+            MajorBiz = new MajorBusiness(context);
+        }
 
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
@@ -24,7 +37,7 @@ namespace UTTM.Controllers.Api
         [HttpGet("GetById")]
         public async Task<IActionResult> GetById(int id)
         {
-            Society? _society = SocietyExists(id) ? await Ctx.Society.FirstAsync(s => s.Id == id) : null;
+            Society? _society = Biz.SocietyExists(id) ? await Ctx.Society.FirstAsync(s => s.Id == id) : null;
 
             if (_society == null) { return NotFound("انجمن مد نظر یافت نشد"); }
 
@@ -36,9 +49,9 @@ namespace UTTM.Controllers.Api
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); };
 
-            if (!MajorExists(req.MajorId) || !UserExists(req.UserId)) { return BadRequest("کاربر یا رشته انتخاب شده وجود ندارد"); }
+            if (!MajorBiz.MajorExists(req.MajorId) || !UserBiz.UserExists(req.UserId)) { return BadRequest("کاربر یا رشته انتخاب شده وجود ندارد"); }
 
-            if (SocietyExistsForThisMajor(req.MajorId)) { return Unauthorized("برای این رشته قبلا انجمن ثبت شده است"); }
+            if (Biz.SocietyExistsForThisMajor(req.MajorId)) { return Unauthorized("برای این رشته قبلا انجمن ثبت شده است"); }
 
             Society _newSociety = new()
             {
@@ -67,7 +80,7 @@ namespace UTTM.Controllers.Api
 
             _existingRecord.Name = req.Name;
 
-            _existingRecord.Avatar = req.Avatar; 
+            _existingRecord.Avatar = req.Avatar;
 
             _existingRecord.Description = req.Description;
 
@@ -126,7 +139,7 @@ namespace UTTM.Controllers.Api
         [HttpDelete("Remove")]
         public async Task<IActionResult> Remove(int id)
         {
-            Society? _society = SocietyExists(id) ? await Ctx.Society.FirstAsync(s => s.Id == id) : null;
+            Society? _society = Biz.SocietyExists(id) ? await Ctx.Society.FirstAsync(s => s.Id == id) : null;
 
             if (_society == null) { return NotFound("انجمن مد نظر یافت نشد"); }
 
@@ -136,27 +149,7 @@ namespace UTTM.Controllers.Api
             return Ok();
         }
 
-        #region Helpers
-        private bool UserExists(int userId)
-        {
-            return Ctx.User.Any(u => u.Id == userId);
-        }
 
-        private bool MajorExists(int majorId)
-        {
-            return Ctx.Major.Any(m => m.Id == majorId);
-        }
-
-        private bool SocietyExists(int societyId)
-        {
-            return Ctx.Society.Any(s => s.Id == societyId);
-        }
-
-        private bool SocietyExistsForThisMajor(int majorId)
-        {
-            return Ctx.Society.Any(s => s.MajorId == majorId);
-        }
-        #endregion
     }
 }
 

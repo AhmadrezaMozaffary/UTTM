@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using UTTM.Business;
 using UTTM.Context;
 using UTTM.Infra;
+using UTTM.Infra.Interfaces;
 using UTTM.Models;
 using UTTM.Models.ViewModels;
 
@@ -10,10 +12,13 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UniversityController : UttmController
+    public class UniversityController : UttmController, IControllerBusiness<UniversityBusiness>
     {
+        public UniversityBusiness Biz { get ; set; }
+
         public UniversityController(UttmDbContext context) : base(context)
         {
+            Biz = new UniversityBusiness(context);
         }
 
         [HttpGet("GetAll")]
@@ -29,7 +34,7 @@ namespace UTTM.Controllers.Api
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); };
 
-            if(UniversityExists(req.Name)) { return Unauthorized("دانشگاه قبلا اضافه شده است"); };
+            if(Biz.UniversityExists(req.Name)) { return Unauthorized("دانشگاه قبلا اضافه شده است"); };
 
             University _uni = new()
             {
@@ -75,14 +80,5 @@ namespace UTTM.Controllers.Api
             
             return Ok();
         }
-
-        #region Helpers
-
-        private bool UniversityExists(string uniName)
-        {
-            return Ctx.University.Any(u => u.Name == uniName);  
-        }
-
-        #endregion
     }
 }

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using UTTM.Business;
 using UTTM.Context;
 using UTTM.Infra;
+using UTTM.Infra.Interfaces;
 using UTTM.Models;
 using UTTM.Models.ViewModels;
 
@@ -10,10 +12,18 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProfessorController : UttmController
+    public class ProfessorController : UttmController, IControllerBusiness<ProfessorBusiness>
     {
+        public ProfessorBusiness Biz { get; set; }
+        public UserBusiness UserBiz { get; set; }
+
+        public SocietyBusiness SocietyBiz { get; set; }
+
         public ProfessorController(UttmDbContext context) : base(context)
         {
+            Biz = new ProfessorBusiness(context);
+            UserBiz = new UserBusiness(context);
+            SocietyBiz = new SocietyBusiness(context);
         }
 
         [HttpGet("GetAll")]
@@ -26,7 +36,7 @@ namespace UTTM.Controllers.Api
         [HttpGet("GetById")]
         public async Task<IActionResult> GetById(int id)
         {
-            Professor? p = await GetProfessor(id);
+            Professor? p = await Biz.GetProfessor(id);
 
             if (p == null) return NotFound("استاد مد نظر یافت نشد");
 
@@ -38,13 +48,13 @@ namespace UTTM.Controllers.Api
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            if (!UserExists(req.UserId)) return NotFound("کاربر یافت نشد");
+            if (!UserBiz.UserExists(req.UserId)) return NotFound("کاربر یافت نشد");
 
-            if (!SocietyExists(req.SocietyId)) return NotFound("انجمن یافت نشد");
+            if (!SocietyBiz.SocietyExists(req.SocietyId)) return NotFound("انجمن یافت نشد");
 
-            if (CurrentProfessorExists(req.UserId)) return Unauthorized("برای کاربر انتخاب شده قبلا استاد اضافه شده است");
+            if (Biz.CurrentProfessorExists(req.UserId)) return Unauthorized("برای کاربر انتخاب شده قبلا استاد اضافه شده است");
 
-            if (!UserCanBeProfessor(req.UserId)) return Unauthorized("کابر از نوع استاد نیست");
+            if (!UserBiz.UserCanBeTypeOf(UserRole.Professor, req.UserId)) return Unauthorized("کابر از نوع استاد نیست");
 
             Professor _newProfessor = new()
             {
@@ -70,29 +80,29 @@ namespace UTTM.Controllers.Api
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
-            Professor? p = await GetProfessor(req.Id);
+            Professor? p = await Biz.GetProfessor(req.Id);
 
             if (p == null) return NotFound("استاد جهت ویرایش یافت نشد");
 
             p.FirstName = req.FirstName;
             p.LastName = req.LastName;
-            p.Avatar   = req.Avatar;
+            p.Avatar = req.Avatar;
             p.Discription = req.Discription;
             p.Rate = req.Rate;
             p.EmailAddress = req.EmailAddress;
 
             Save();
 
-            return Ok(p);   
+            return Ok(p);
 
         }
 
         [HttpDelete("Remove")]
         public async Task<IActionResult> Remove(int id)
         {
-            Professor? p = await GetProfessor(id);
+            Professor? p = await Biz.GetProfessor(id);
 
-            if(p == null) return NotFound("استاد مد نظر یافت نشد");
+            if (p == null) return NotFound("استاد مد نظر یافت نشد");
 
             Ctx.Professor.Remove(p);
             Save();
@@ -100,27 +110,5 @@ namespace UTTM.Controllers.Api
             return Ok(p.Id);
         }
 
-        #region Helpers
-        private bool CurrentProfessorExists(int userId)
-        {
-            return Ctx.Professor.Where(s => s.UserId == userId).Any();
-        }
-        private Task<Professor?> GetProfessor(int id)
-        {
-            return Ctx.Professor.FirstOrDefaultAsync(x => x.Id == id);
-        }
-        private bool UserExists(int userId)
-        {
-            return Ctx.User.Any(u => u.Id == userId);
-        }
-        private bool SocietyExists(int societyId)
-        {
-            return Ctx.Society.Any(s => s.Id == societyId);
-        }
-        private bool UserCanBeProfessor(int uId)
-        {
-            return Ctx.User.First(u => u.Id == uId).Role == UserRole.Professor;
-        }
-        #endregion
     }
 }
