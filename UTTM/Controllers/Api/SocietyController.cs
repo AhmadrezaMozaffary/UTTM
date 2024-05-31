@@ -17,141 +17,64 @@ namespace UTTM.Controllers.Api
     {
         public SocietyBusiness Biz { get; set; }
 
-        public UserBusiness UserBiz { get; set; }
-
-        public MajorBusiness MajorBiz { get; set; }
-
-        public SocietyController(UttmDbContext context) : base(context)
+        public SocietyController(SocietyBusiness biz)
         {
-            Biz = new SocietyBusiness(context);
-            UserBiz = new UserBusiness(context);
-            MajorBiz = new MajorBusiness(context);
+            Biz = biz;
         }
 
         [HttpGet("GetAll")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<List<Society>>> GetAll()
         {
-            List<Society> societies = await Ctx.Society.ToListAsync();
-
-            return Ok(societies);
+            return Ok(await Biz.GetAllSocieties());
         }
 
         [HttpGet("GetById")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<Society>> GetById(int id)
         {
-            Society? _society = Biz.SocietyExists(id) ? await Ctx.Society.FirstAsync(s => s.Id == id) : null;
-
-            if (_society == null) { return NotFound("انجمن مد نظر یافت نشد"); }
-
-            return Ok(_society);
+            return Ok(await Biz.GetSocietyById(id));
         }
 
         [HttpPost("Add")]
-        public async Task<IActionResult> Add([FromBody] SocietyViewModel req)
+        public async Task<ActionResult<int>> Add([FromBody] SocietyViewModel req)
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); };
 
-            if (!MajorBiz.MajorExists(req.MajorId) || !UserBiz.UserExists(req.UserId)) { return BadRequest("کاربر یا رشته انتخاب شده وجود ندارد"); }
-
-            if (Biz.SocietyExistsForThisMajor(req.MajorId)) { return Unauthorized("برای این رشته قبلا انجمن ثبت شده است"); }
-
-            Society _newSociety = new()
-            {
-                Id = 0,
-                Name = req.Name,
-                Avatar = req.Avatar,
-                Description = req.Description,
-                UserId = req.UserId,
-                MajorId = req.MajorId,
-            };
-
-            await Ctx.Society.AddAsync(_newSociety);
-            Save();
-
-            return Ok(_newSociety.Id);
-
+            return Ok(await Biz.AddNewSociety(req));
         }
 
 
         [HttpPut("Edit")]
-        public async Task<IActionResult> Edit([FromBody] SocietyEditModel req)
+        public async Task<ActionResult<Society>> Edit([FromBody] SocietyEditModel req)
         {
-            Society? _existingRecord = await Ctx.Society.FirstOrDefaultAsync(x => x.Id == req.Id);
-
-            if (_existingRecord == null) { return NotFound("رکوردی جهت ویرایش وجود ندارد"); }
-
-            _existingRecord.Name = req.Name;
-
-            _existingRecord.Avatar = req.Avatar;
-
-            _existingRecord.Description = req.Description;
-
-            Ctx.Society.Update(_existingRecord);
-            Save();
-
-            return Ok(_existingRecord);
+            return Ok(await Biz.EditSociety(req));
         }
 
         [HttpPut("EditName")]
-        public async Task<IActionResult> EditName([FromBody] SocietyEditNameModel req)
+        public async Task<ActionResult<Society>> EditName([FromBody] SocietyEditNameModel req)
         {
-            Society? _existingRecord = await Ctx.Society.FirstOrDefaultAsync(x => x.Id == req.Id);
-
-            if (_existingRecord == null) { return NotFound("رکوردی جهت ویرایش وجود ندارد"); }
-
-            _existingRecord.Name = req.Name;
-
-            Ctx.Society.Update(_existingRecord);
-            Save();
-
-            return Ok(_existingRecord);
+            return Ok(await Biz.RenameSociety(req));
         }
 
 
         [HttpPut("EditAvatar")]
-        public async Task<IActionResult> EditAvatar([FromBody] SocietyEditAvatarModel req)
+        public async Task<ActionResult<Society>> EditAvatar([FromBody] SocietyEditAvatarModel req)
         {
-            Society? _existingRecord = await Ctx.Society.FirstOrDefaultAsync(x => x.Id == req.Id);
-
-            if (_existingRecord == null) { return NotFound("رکوردی جهت ویرایش وجود ندارد"); }
-
-            _existingRecord.Avatar = req.Avatar;
-
-            Ctx.Society.Update(_existingRecord);
-            Save();
-
-            return Ok(_existingRecord);
+            return Ok(await Biz.ChangeAvatar(req));
         }
 
         [HttpPut("EditDescription")]
-        public async Task<IActionResult> EditDescription([FromBody] SocietyEditDescriptionModel req)
+        public async Task<ActionResult<Society>> EditDescription([FromBody] SocietyEditDescriptionModel req)
         {
-            Society? _existingRecord = await Ctx.Society.FirstOrDefaultAsync(x => x.Id == req.Id);
-
-            if (_existingRecord == null) { return NotFound("رکوردی جهت ویرایش وجود ندارد"); }
-
-            _existingRecord.Description = req.Description;
-
-            Ctx.Society.Update(_existingRecord);
-            Save();
-
-            return Ok(_existingRecord);
+            return Ok(await Biz.EditDescription(req));
         }
 
         [HttpDelete("Remove")]
         [Authorize(nameof(UserRole.Admin))]
-        public async Task<IActionResult> Remove(int id)
+        public async Task<ActionResult<int>> Remove(int id)
         {
-            Society? _society = Biz.SocietyExists(id) ? await Ctx.Society.FirstAsync(s => s.Id == id) : null;
-
-            if (_society == null) { return NotFound("انجمن مد نظر یافت نشد"); }
-
-            Ctx.Society.Remove(_society);
-            Save();
-
-            return Ok();
+            return Ok(await Biz.DeleteSociety(id));
         }
 
 

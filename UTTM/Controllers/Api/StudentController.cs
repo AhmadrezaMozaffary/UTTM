@@ -18,94 +18,44 @@ namespace UTTM.Controllers.Api
     {
         public StudentBusiness Biz { get; set; }
 
-        public UserBusiness UserBiz { get; set; }
-
-        public SocietyBusiness SocietyBiz { get; set; }
-
-
-        public StudentController(UttmDbContext context) : base(context)
+        public StudentController(StudentBusiness biz)
         {
-            Biz = new StudentBusiness(context);
-            UserBiz = new UserBusiness(context);
-            SocietyBiz = new SocietyBusiness(context);
+            Biz = biz;
         }
 
         [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAll()
-        {
-            List<Student> stds = await Ctx.Student.ToListAsync();
-            return Ok(stds);
+        public async Task<ActionResult<List<Student>>> GetAll()
+        {      
+            return Ok(await Biz.GetAllStudents());
         }
 
         [HttpGet("GetById")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<Student>> GetById(int id)
         {
-            Student? _std = await Biz.GetStudent(id);
-
-            if (_std == null) return NotFound("دانشجو مد نظر یافت نشد");
-
-            return Ok(_std);
+            return Ok(await Biz.GetStudent(id));
         }
 
         [HttpPost("Add")]
-        public async Task<IActionResult> AddNew([FromBody] StudentViewModel req)
+        public async Task<ActionResult<int>> AddNew([FromBody] StudentViewModel req)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            if (!UserBiz.UserExists(req.UserId)) return NotFound("کاربر یافت نشد");
-
-            if (!SocietyBiz.SocietyExists(req.SocietyId)) return NotFound("انجمن یافت نشد");
-
-            if (Biz.CurrentStudentExists(req.UserId)) return Unauthorized("برای کاربر انتخاب شده قبلا دانشجو اضافه شده است");
-
-            if (!UserBiz.UserCanBeTypeOf(UserRole.Student, req.UserId)) return Unauthorized("کابر از نوع دانشجو نیست");
-
-            Student _newStd = new()
-            {
-                Id = 0,
-                FirstName = req.FirstName,
-                LastName = req.LastName,
-                Avatar = req.Avatar,
-                UserId = req.UserId,
-                SocietyId = req.SocietyId
-            };
-
-            await Ctx.Student.AddAsync(_newStd);
-            Save();
-
-            return Ok(_newStd.Id);
+            return Ok(Biz.AddNewStudent(req));
 
         }
 
         [HttpPut("Edit")]
-        public async Task<IActionResult> EditStudent([FromBody] StudentEditViewModel req)
+        public async Task<ActionResult<Student>> EditStudent([FromBody] StudentEditViewModel req)
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
-            Student? _existingStd = await Biz.GetStudent(req.Id);
-
-            if (_existingStd == null) return NotFound("دانشجو جهت ویرایش یافت نشد");
-
-            _existingStd.FirstName = req.FirstName;
-            _existingStd.LastName = req.LastName;
-            _existingStd.Avatar = req.Avatar;
-
-            Save();
-
-            return Ok(_existingStd);
+            return Ok(await Biz.EditStudent(req));
         }
 
         [HttpDelete("Remove")]
-        public async Task<IActionResult> Remove(int id)
+        public async Task<ActionResult<int>> Remove(int id)
         {
-            Student? _std = await Biz.GetStudent(id);
-
-            if (_std == null) return NotFound("دانشجو مد نظر یافت نشد");
-
-            Ctx.Student.Remove(_std);
-            Save();
-
-            return Ok(_std);
+            return Ok(await Biz.DeleteStudent(id));
         }
 
     }

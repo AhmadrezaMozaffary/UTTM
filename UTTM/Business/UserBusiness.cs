@@ -1,38 +1,85 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using UTTM.Business.Interfaces;
 using UTTM.Context;
+using UTTM.Controllers.Api;
 using UTTM.Infra;
 using UTTM.Models;
+using UTTM.Models.ViewModels;
 
 namespace UTTM.Business
 {
-    public class UserBusiness : BusinessBase
+    public class UserBusiness : BusinessBase, IUserBusiness
     {
-        public UserBusiness(UttmDbContext ctx) : base(ctx)
+        private IConfiguration _config;
+
+        public UserBusiness(UttmDbContext ctx, IConfiguration config) : base(ctx)
         {
+            _config = config;
+        }
+
+        public async Task<string> Login(LoginRequest user)
+        {
+            if (!UserExists(user.UserName)) { throw new Exception("نام کاربری وجود ندارد"); };
+
+            User dbUser = await ctx.User.FirstAsync<User>(_user => _user.UserName == user.UserName);
+
+            if (dbUser != null && (dbUser.Password == HashPassword(user.Password)))
+            {
+                return GetToken(dbUser);
+            }
+            else
+            {
+                throw new Exception("اطلاعات وارد شده صحیح نمیباشد");
+            }
+        }
+
+        public async Task<int> CreateUser(SignUpViewModel req)
+        {
+            if (UserExists(req.UserName))
+            {
+                throw new Exception("نام کاربری قبلا انتخاب شده است");
+            }
+
+            DateTime currentDate = DateTime.Now;
+            User _newUser = new()
+            {
+                Id = 0,
+                UserName = req.UserName,
+                Password = HashPassword(req.Password),
+                Role = req.Role,
+                CreatedAt = currentDate,
+                LastUpdatedAt = currentDate
+            };
+
+            await ctx.User.AddAsync(_newUser);
+            Save();
+
+            return _newUser.Id;
         }
 
         public bool UserExists(string username)
         {
-            return Ctx.User.Any(u => u.UserName == username);
+            return ctx.User.Any(u => u.UserName == username);
         }
 
         public bool UserExists(int userId)
         {
-            return Ctx.User.Any(u => u.Id == userId);
+            return ctx.User.Any(u => u.Id == userId);
         }
 
         public bool UserCanBeTypeOf(UserRole targetRole, int userId)
         {
-            UserRole? role = Ctx.User.First(u => u.Id == userId).Role;
+            UserRole? role = ctx.User.First(u => u.Id == userId).Role;
 
             return role == targetRole;
         }
 
-        public string GetToken(IConfiguration _config, User user)
+        public string GetToken(User user)
         {
             List<Claim> claims = new List<Claim>
             {

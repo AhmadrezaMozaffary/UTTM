@@ -1,10 +1,16 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Filters;
+using System.Configuration;
 using System.Text;
+using UTTM.Business;
+using UTTM.Business.Interfaces;
 using UTTM.Context;
+using UTTM.Infra.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 #region Builder
@@ -30,7 +36,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
+
 // Add services to the container.
+builder.Services.AddScoped(p => new UniversityBusiness(p.GetRequiredService<UttmDbContext>()));
+builder.Services.AddScoped(p => new MajorBusiness(p.GetRequiredService<UttmDbContext>(), p.GetRequiredService<UniversityBusiness>()));
+builder.Services.AddScoped(p => new UserBusiness(p.GetRequiredService<UttmDbContext>(), p.GetRequiredService<IConfiguration>()));
+builder.Services.AddScoped(p => new SocietyBusiness(p.GetRequiredService<UttmDbContext>(), p.GetRequiredService<UserBusiness>(), p.GetRequiredService<MajorBusiness>()));
+builder.Services.AddScoped(p => new StudentBusiness(p.GetRequiredService<UttmDbContext>(), p.GetRequiredService<SocietyBusiness>(), p.GetRequiredService<UserBusiness>()));
+builder.Services.AddScoped(p => new SettingBusiness(p.GetRequiredService<UttmDbContext>(), p.GetRequiredService<UserBusiness>()));
+builder.Services.AddScoped(p => new ProfessorBusiness(p.GetRequiredService<UttmDbContext>(), p.GetRequiredService<UserBusiness>(), p.GetRequiredService<SocietyBusiness>()));
+builder.Services.AddScoped(p => new EventBusiness(p.GetRequiredService<UttmDbContext>(), p.GetRequiredService<SocietyBusiness>()));
+
 //builder.Services.AddControllersWithViews();
 builder.Services.AddLogging();
 var serviceProvider = builder.Services.BuildServiceProvider();
@@ -40,7 +56,7 @@ var serviceProvider = builder.Services.BuildServiceProvider();
 builder.Services.AddEntityFrameworkSqlServer().AddDbContext<UttmDbContext>(config =>
 {
     config.UseSqlServer(Configuration.GetConnectionString("Default"));
-});
+}, ServiceLifetime.Singleton);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

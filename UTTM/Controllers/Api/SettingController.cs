@@ -16,37 +16,24 @@ namespace UTTM.Controllers.Api
     public class SettingController : UttmController, IControllerBusiness<SettingBusiness>
     {
         public SettingBusiness Biz { get; set; }
-        public UserBusiness UserBiz { get; set; }
 
-
-        public SettingController(UttmDbContext context) : base(context)
+        public SettingController(SettingBusiness biz) 
         {
-            Biz = new SettingBusiness(context);
-            UserBiz = new UserBusiness(context);
+            Biz = biz;
         }
 
         [HttpGet("GetUserSetting")]
-        public async Task<IActionResult> GetByUserId(int userId)
+        public async Task<ActionResult<Setting>> GetByUserId(int userId)
         {
-            if (!UserBiz.UserExists(userId)) { return NotFound("کاربر مدنظر یافت نشد"); }
-
-            Setting? s = await Biz.GetByUserId(userId);
-
-            if (s == null) { return NotFound("برای کاربر مدنظر هیچ تنظیماتی یافت نشد"); }
-
-            return Ok(s);
+            return Ok(await Biz.GetByUserId(userId));
         }
 
         [HttpPost("Set")]
-        public async Task<IActionResult> Set([FromBody] SettingViewModel req)
+        public async Task<ActionResult<int>> Set([FromBody] SettingViewModel req)
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
-            if(!UserBiz.UserExists(req.UserId)) { return NotFound("کاربر مدنظر یافت نشد"); }
-
-            int settingId = await Biz.Set(req);
-
-            return Ok(settingId);
+            return Ok(await Biz.Set(req));
         }
 
     }

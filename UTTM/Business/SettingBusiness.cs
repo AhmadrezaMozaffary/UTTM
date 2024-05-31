@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using UTTM.Business.Interfaces;
 using UTTM.Context;
 using UTTM.Infra;
 using UTTM.Models;
@@ -6,24 +7,35 @@ using UTTM.Models.ViewModels;
 
 namespace UTTM.Business
 {
-    public class SettingBusiness : BusinessBase
+    public class SettingBusiness : BusinessBase, ISettingBusiness
     {
-        public SettingBusiness(UttmDbContext ctx) : base(ctx)
+        public UserBusiness UserBiz { get; set; }
+
+        public SettingBusiness(UttmDbContext ctx, UserBusiness userBiz) : base(ctx)
         {
+            UserBiz = userBiz;
         }
 
         public async Task<Setting?> GetByUserId(int userId)
         {
-            return await Ctx.Setting.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (!UserBiz.UserExists(userId)) { throw new Exception("کاربر مدنظر یافت نشد"); }
+
+            Setting? s = await ctx.Setting.FirstOrDefaultAsync(u => u.UserId == userId); ;
+
+            if (s == null) { throw new Exception("برای کاربر مدنظر هیچ تنظیماتی یافت نشد"); }
+
+            return s;
         }
 
         public bool UserHaveSetting(int userId)
         {
-            return Ctx.Setting.Any(s => s.UserId == userId);
+            return ctx.Setting.Any(s => s.UserId == userId);
         }
 
         public async Task<int> Set(SettingViewModel reqBody)
         {
+            if (!UserBiz.UserExists(reqBody.UserId)) { throw new Exception("کاربر مدنظر یافت نشد"); }
+
             if (UserHaveSetting(reqBody.UserId)) { return await Update(reqBody); }
             else
             {
@@ -34,7 +46,7 @@ namespace UTTM.Business
                     UserId = reqBody.UserId,
                 };
 
-                await Ctx.Setting.AddAsync(s);
+                await ctx.Setting.AddAsync(s);
 
                 Save();
                 return s.Id;
@@ -50,7 +62,7 @@ namespace UTTM.Business
             s.Config = reqBody.Config;
 
             Save();
-            return 1;
+            return s.Id;
         }
     }
 }

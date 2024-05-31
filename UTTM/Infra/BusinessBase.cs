@@ -5,17 +5,17 @@ namespace UTTM.Infra
 {
     public class BusinessBase
     {
-        public UttmDbContext Ctx { get; private set; }
+        protected readonly UttmDbContext ctx;
 
-        public BusinessBase(UttmDbContext ctx)
+        public BusinessBase(UttmDbContext _ctx)
         {
-            Ctx = ctx;
+            ctx = _ctx;
         }
 
         [NonAction]
         public void Save()
         {
-            Ctx.SaveChanges();
+            ctx.SaveChanges();
         }
     }
 }

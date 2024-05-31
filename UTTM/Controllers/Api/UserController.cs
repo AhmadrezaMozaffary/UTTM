@@ -24,41 +24,19 @@ namespace UTTM.Controllers.Api
     [ApiController]
     public class UserController : UttmController, IControllerBusiness<UserBusiness>
     {
-        private IConfiguration _config;
-
         public UserBusiness Biz { get; set; }
 
-        public UserController(IConfiguration config, UttmDbContext context) : base(context)
+        public UserController(UserBusiness biz)
         {
-            _config = config;
-            Biz = new UserBusiness(context);
+            Biz = biz;
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUp([FromBody] SignUpViewModel req)
+        public async Task<ActionResult<int>> SignUp([FromBody] SignUpViewModel req)
         {
             if (ModelState.IsValid)
             {
-                if (Biz.UserExists(req.UserName))
-                {
-                    return Ok("نام کاربری قبلا انتخاب شده است");
-                }
-
-                DateTime currentDate = DateTime.Now;
-                User _newUser = new()
-                {
-                    Id = 0,
-                    UserName = req.UserName,
-                    Password = Biz.HashPassword(req.Password),
-                    Role = req.Role,
-                    CreatedAt = currentDate,
-                    LastUpdatedAt = currentDate
-                };
-
-                await Ctx.User.AddAsync(_newUser);
-                Save();
-
-                return Ok(_newUser.Id);
+                return Ok(await Biz.CreateUser(req));
             }
             else
             {
@@ -68,21 +46,9 @@ namespace UTTM.Controllers.Api
 
         // GET: api/<LoginController>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest req)
-
+        public async Task<ActionResult<string>> Login([FromBody] LoginRequest req)
         {
-            if (!Biz.UserExists(req.UserName)) { return NotFound("نام کاربری وجود ندارد"); };
-
-            User dbUser = await Ctx.User.FirstAsync<User>(_user => _user.UserName == req.UserName);
-
-            if (dbUser != null && (dbUser.Password == Biz.HashPassword(req.Password)))
-            {
-                return Ok(Biz.GetToken(_config, dbUser));
-            }
-            else
-            {
-                return NotFound("اطلاعات وارد شده صحیح نمیباشد");
-            }
+            return Ok(await Biz.Login(req));
         }
 
     }
