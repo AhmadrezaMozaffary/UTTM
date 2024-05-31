@@ -11,7 +11,7 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize($"{nameof(UserRole.Admin)}, {nameof(UserRole.Society)}")]
+    [Authorize($"{nameof(UserRole.Admin)}, {nameof(UserRole.Society)}")]
     public class EventController : UttmController, IControllerBusiness<EventBusiness>
     {
         public EventBusiness Biz { get; set; }
@@ -27,12 +27,14 @@ namespace UTTM.Controllers.Api
         }
 
         [HttpGet("GetAll")]
+        [AllowAnonymous]
         public async Task<ActionResult<List<Event>>> GetAll()
         {
             return Ok(await Biz.GetAllEvents());
         }
 
         [HttpGet("GetById")]
+        [AllowAnonymous]
         public async Task<ActionResult<Event>> GetById(int id)
         {
             var e = await Biz.GetEventById(id);
