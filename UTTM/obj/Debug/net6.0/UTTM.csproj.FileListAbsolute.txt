@@ -40,6 +40,7 @@ D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\UTTM.pdb
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Humanizer.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\MessagePack.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\MessagePack.Annotations.dll
+D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.AspNetCore.Razor.Language.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.Bcl.AsyncInterfaces.dll
@@ -64,6 +65,7 @@ D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Relational.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.SqlServer.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.Extensions.Caching.Memory.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.Extensions.DependencyInjection.dll
+D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.Extensions.DependencyModel.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.Identity.Client.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.IdentityModel.JsonWebTokens.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.IdentityModel.Logging.dll
@@ -91,6 +93,9 @@ D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\NuGet.Packaging.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\NuGet.ProjectModel.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\NuGet.Protocol.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\NuGet.Versioning.dll
+D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Scrutor.dll
+D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Swashbuckle.AspNetCore.Filters.dll
+D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Swashbuckle.AspNetCore.Filters.Abstractions.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Swashbuckle.AspNetCore.Swagger.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerUI.dll
@@ -274,10 +279,9 @@ D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\staticwebassets.pack.json
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\staticwebassets.build.json
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\staticwebassets.development.json
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\scopedcss\bundle\UTTM.styles.css
+D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\UTTM.csproj.CopyComplete
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\UTTM.dll
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\refint\UTTM.dll
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\UTTM.pdb
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\UTTM.genruntimeconfig.cache
 D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\ref\UTTM.dll
-D:\UTTM\UTTM\UTTM\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
-D:\UTTM\UTTM\UTTM\obj\Debug\net6.0\UTTM.csproj.CopyComplete

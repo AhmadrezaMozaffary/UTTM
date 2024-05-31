@@ -1,4 +1,7 @@
-﻿using System.Security.Cryptography;
+﻿using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using UTTM.Context;
 using UTTM.Infra;
@@ -22,11 +25,41 @@ namespace UTTM.Business
             return Ctx.User.Any(u => u.Id == userId);
         }
 
-        public bool UserCanBeTypeOf(UserRole targetRole,int userId)
+        public bool UserCanBeTypeOf(UserRole targetRole, int userId)
         {
             UserRole? role = Ctx.User.First(u => u.Id == userId).Role;
 
             return role == targetRole;
+        }
+
+        public string GetToken(IConfiguration _config, User user)
+        {
+            List<Claim> claims = new List<Claim>
+            {
+              //  new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Role, GetUserRole((int)user.Role))
+            };
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var Sectoken = new JwtSecurityToken(_config["Jwt:Issuer"],
+              _config["Jwt:Issuer"],
+              claims: claims,
+              expires: DateTime.Now.AddMinutes(120),
+              signingCredentials: credentials);
+
+            var token = new JwtSecurityTokenHandler().WriteToken(Sectoken);
+
+            return token;
+        }
+
+        private string GetUserRole(int targetRole)
+        {
+            var roleMapperDict = Enum.GetValues(typeof(UserRole)).Cast<UserRole>().ToDictionary(ur => (int)ur, ur => ur.ToString());
+
+            return roleMapperDict[targetRole];
         }
 
         public string HashPassword(string password)

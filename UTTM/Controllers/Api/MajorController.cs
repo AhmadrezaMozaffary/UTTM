@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UTTM.Business;
@@ -12,6 +13,7 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize($"{nameof(UserRole.Admin)}, {nameof(UserRole.Society)}")]
     public class MajorController : UttmController, IControllerBusiness<MajorBusiness>
     {
         public MajorBusiness Biz { get; set; }
@@ -25,6 +27,7 @@ namespace UTTM.Controllers.Api
         }
 
         [HttpGet("GetAll")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             List<Major> _majors = await Ctx.Major.ToListAsync();

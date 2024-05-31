@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UTTM.Business;
 using UTTM.Context;
@@ -11,6 +12,7 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize($"{nameof(UserRole.Admin)}, {nameof(UserRole.Society)}")]
     public class SocietyController : UttmController, IControllerBusiness<SocietyBusiness>
     {
         public SocietyBusiness Biz { get; set; }
@@ -27,6 +29,7 @@ namespace UTTM.Controllers.Api
         }
 
         [HttpGet("GetAll")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             List<Society> societies = await Ctx.Society.ToListAsync();
@@ -35,6 +38,7 @@ namespace UTTM.Controllers.Api
         }
 
         [HttpGet("GetById")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
             Society? _society = Biz.SocietyExists(id) ? await Ctx.Society.FirstAsync(s => s.Id == id) : null;
@@ -137,6 +141,7 @@ namespace UTTM.Controllers.Api
         }
 
         [HttpDelete("Remove")]
+        [Authorize(nameof(UserRole.Admin))]
         public async Task<IActionResult> Remove(int id)
         {
             Society? _society = Biz.SocietyExists(id) ? await Ctx.Society.FirstAsync(s => s.Id == id) : null;

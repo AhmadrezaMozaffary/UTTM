@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
 using System.Text;
 using UTTM.Business;
 using UTTM.Context;
@@ -30,8 +28,8 @@ namespace UTTM.Controllers.Api
 
         public UserBusiness Biz { get; set; }
 
-        public UserController(IConfiguration config, UttmDbContext context): base(context)
-        {     
+        public UserController(IConfiguration config, UttmDbContext context) : base(context)
+        {
             _config = config;
             Biz = new UserBusiness(context);
         }
@@ -79,18 +77,7 @@ namespace UTTM.Controllers.Api
 
             if (dbUser != null && (dbUser.Password == Biz.HashPassword(req.Password)))
             {
-                var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-                var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-                var Sectoken = new JwtSecurityToken(_config["Jwt:Issuer"],
-                  _config["Jwt:Issuer"],
-                  null,
-                  expires: DateTime.Now.AddMinutes(120),
-                  signingCredentials: credentials);
-
-                var token = new JwtSecurityTokenHandler().WriteToken(Sectoken);
-
-                return Ok(token);
+                return Ok(Biz.GetToken(_config, dbUser));
             }
             else
             {

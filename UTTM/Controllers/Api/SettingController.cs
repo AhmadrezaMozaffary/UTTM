@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UTTM.Business;
 using UTTM.Context;
@@ -11,6 +12,7 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SettingController : UttmController, IControllerBusiness<SettingBusiness>
     {
         public SettingBusiness Biz { get; set; }
