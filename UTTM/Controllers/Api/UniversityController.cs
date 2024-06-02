@@ -13,7 +13,7 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(nameof(UserRole.Admin))]
+    [Authorize(Roles = nameof(UserRole.Admin))]
     public class UniversityController : UttmController, IControllerBusiness<UniversityBusiness>
     {
         public UniversityBusiness Biz { get; set; }

@@ -12,7 +12,7 @@ namespace UTTM.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize($"{nameof(UserRole.Admin)}, {nameof(UserRole.Society)}")]
+    [Authorize(Roles = $"{nameof(UserRole.Admin)}, {nameof(UserRole.Society)}")]
     public class SocietyController : UttmController, IControllerBusiness<SocietyBusiness>
     {
         public SocietyBusiness Biz { get; set; }
